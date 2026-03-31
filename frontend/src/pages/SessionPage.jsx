@@ -24,6 +24,7 @@ function SessionPage() {
   const [output, setOutput] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [showRecordingsModal, setShowRecordingsModal] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(true);
 
   const { data: sessionData, isLoading: loadingSession, refetch } = useSessionById(id);
 
@@ -73,6 +74,38 @@ function SessionPage() {
     }
   }, [problemData, selectedLanguage]);
 
+  useEffect(() => {
+    if (!session || loadingSession) return;
+    if (session.status !== "active") return;
+    if (!isParticipant) return;
+  
+    const enterFullscreen = async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (err) {
+        console.error("Fullscreen error:", err);
+      }
+    };
+  
+    enterFullscreen();
+  
+    return () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, [session?.status, isParticipant, loadingSession]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
     setSelectedLanguage(newLang);
@@ -113,7 +146,17 @@ function SessionPage() {
   return (
     <div className="h-screen bg-base-100 flex flex-col">
       <Navbar />
-
+      {!isFullscreen && isParticipant && session?.status === "active" && (
+        <div className="bg-warning text-warning-content px-4 py-2 flex items-center justify-between text-sm font-semibold z-50">
+          <span>You have exited fullscreen mode. Please return to fullscreen for the best experience.</span>
+          <button
+            className="btn btn-xs btn-warning border border-warning-content/30"
+            onClick={() => document.documentElement.requestFullscreen()}
+          >
+            Re-enter Fullscreen
+          </button>
+        </div>
+      )}
       <div className="flex-1">
         <PanelGroup direction="horizontal">
           {/* LEFT PANEL - CODE EDITOR & PROBLEM DETAILS */}
