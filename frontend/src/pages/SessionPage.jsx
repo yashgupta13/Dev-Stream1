@@ -15,6 +15,7 @@ import OutputPanel from "../components/OutputPanel";
 import useStreamClient from "../hooks/useStreamClient";
 import { StreamCall, StreamVideo } from "@stream-io/video-react-sdk";
 import VideoCallUI from "../components/VideoCallUI";
+import RecordingsModal from "../components/RecordingsModal";
 
 function SessionPage() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function SessionPage() {
   const { user } = useUser();
   const [output, setOutput] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [showRecordingsModal, setShowRecordingsModal] = useState(false);
 
   const { data: sessionData, isLoading: loadingSession, refetch } = useSessionById(id);
 
@@ -301,9 +303,21 @@ function SessionPage() {
                 <div className="h-full">
                   <StreamVideo client={streamClient}>
                     <StreamCall call={call}>
-                      <VideoCallUI chatClient={chatClient} channel={channel} />
+                    <VideoCallUI
+                      chatClient={chatClient}
+                      channel={channel}
+                      sessionId={id}
+                      isHost={isHost}
+                      onViewRecordings={() => setShowRecordingsModal(true)}
+                    />
                     </StreamCall>
                   </StreamVideo>
+                  {showRecordingsModal && (
+                    <RecordingsModal
+                      sessionId={id}
+                      onClose={() => setShowRecordingsModal(false)}
+                    />
+                  )}
                 </div>
               )}
             </div>

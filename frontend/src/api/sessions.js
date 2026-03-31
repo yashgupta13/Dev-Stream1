@@ -34,4 +34,16 @@ export const sessionApi = {
     const response = await axiosInstance.get(`/chat/token`);
     return response.data;
   },
+  startRecording: async (id) => {
+    const response = await axiosInstance.post(`/sessions/${id}/recording/start`);
+    return response.data;
+  },
+  stopRecording: async (id) => {
+    const response = await axiosInstance.post(`/sessions/${id}/recording/stop`);
+    return response.data;
+  },
+  getRecordings: async (id) => {
+    const response = await axiosInstance.get(`/sessions/${id}/recordings`);
+    return response.data;
+  },
 };

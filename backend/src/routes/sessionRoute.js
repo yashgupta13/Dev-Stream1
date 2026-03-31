@@ -9,6 +9,7 @@ import {
   joinSession,
   kickParticipant,
 } from "../controllers/sessionController.js";
+import { startRecording, stopRecording, getRecordings } from "../controllers/sessionController.js";
 
 const router = express.Router();
 
@@ -21,4 +22,7 @@ router.post("/:id/join", protectRoute, joinSession);
 router.post("/:id/end", protectRoute, endSession);
 router.post("/:id/kick", protectRoute, kickParticipant);
 
+router.post("/:id/recording/start", protectRoute, startRecording);
+router.post("/:id/recording/stop",  protectRoute, stopRecording);
+router.get("/:id/recordings",       protectRoute, getRecordings);
 export default router;

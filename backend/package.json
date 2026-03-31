@@ -14,12 +14,12 @@
     "@clerk/express": "^1.7.65",
     "@stream-io/node-sdk": "^0.7.36",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "inngest": "^3.49.3",
-    "mongoose": "^9.1.5",
-    "stream-chat": "^9.29.0"
+    "inngest": "^3.44.3",
+    "mongoose": "^8.19.1",
+    "stream-chat": "^9.24.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

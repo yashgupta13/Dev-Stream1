@@ -238,3 +238,62 @@ export async function kickParticipant(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// Start recording
+export async function startRecording(req, res) {
+  try {
+    const { id } = req.params;
+    const session = await Session.findById(id);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    if (session.host.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the host can start recording" });
+    }
+
+    const call = streamClient.video.call("default", session.callId);
+    await call.startRecording();
+
+    res.status(200).json({ message: "Recording started" });
+  } catch (error) {
+    console.log("startRecording error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// Stop recording
+export async function stopRecording(req, res) {
+  try {
+    const { id } = req.params;
+    const session = await Session.findById(id);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    if (session.host.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Only the host can stop recording" });
+    }
+
+    const call = streamClient.video.call("default", session.callId);
+    await call.stopRecording();
+
+    res.status(200).json({ message: "Recording stopped" });
+  } catch (error) {
+    console.log("stopRecording error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// Get recordings list
+export async function getRecordings(req, res) {
+  try {
+    const { id } = req.params;
+    const session = await Session.findById(id);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    const call = streamClient.video.call("default", session.callId);
+    const response = await call.listRecordings();
+
+    res.status(200).json({ recordings: response.recordings || [] });
+  } catch (error) {
+    console.log("getRecordings error:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
