@@ -1,8 +1,12 @@
 import { requireAuth } from "@clerk/express";
 import User from "../models/User.js";
 
+// this only checks if the user is authenticated with Clerk
+export const requireClerkAuth = requireAuth();
+
+// this checks both Clerk auth AND if the user exists in our MongoDB
 export const protectRoute = [
-  requireAuth(),
+  requireClerkAuth,
   async (req, res, next) => {
     try {
       const clerkId = req.auth().userId;
@@ -13,7 +17,10 @@ export const protectRoute = [
       // find user in db by clerk ID
       const user = await User.findOne({ clerkId });
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!user)
+        return res
+          .status(401)
+          .json({ message: "User not found in our records. Please ensure your account is synchronized." });
 
       // BLOCKED USER CHECK
       if (user.blocked) {

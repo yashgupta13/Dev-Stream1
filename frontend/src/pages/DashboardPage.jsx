@@ -22,16 +22,27 @@ function DashboardPage() {
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
 
   const handleCreateRoom = () => {
-    if (!roomConfig.problem || !roomConfig.difficulty) return;
+    if (
+      !roomConfig.problem ||
+      !roomConfig.difficulty ||
+      !roomConfig.sessionName ||
+      !roomConfig.password ||
+      !roomConfig.candidateEmail
+    )
+      return;
 
     createSessionMutation.mutate(
       {
         problem: roomConfig.problem,
         difficulty: roomConfig.difficulty.toLowerCase(),
+        sessionName: roomConfig.sessionName,
+        password: roomConfig.password,
+        candidateEmail: roomConfig.candidateEmail,
       },
       {
         onSuccess: (data) => {
           setShowCreateModal(false);
+          setRoomConfig({ problem: "", difficulty: "", sessionName: "", password: "", candidateEmail: "" });
           navigate(`/session/${data.session._id}`);
         },
       }

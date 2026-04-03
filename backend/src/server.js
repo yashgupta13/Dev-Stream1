@@ -19,7 +19,10 @@ const __dirname = path.resolve();
 // middleware
 app.use(express.json());
 // credentials:true meaning?? => server allows a browser to include cookies on request
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+const allowedOrigins = Array.isArray(ENV.CLIENT_URL) ? ENV.CLIENT_URL : [ENV.CLIENT_URL];
+if (!allowedOrigins.includes("http://localhost:5173")) allowedOrigins.push("http://localhost:5173");
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(clerkMiddleware()); // this adds auth field to request object: req.auth()
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
@@ -35,7 +38,7 @@ app.get("/health", (req, res) => {
 if (ENV.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-  app.get("/{*any}", (req, res) => {
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
@@ -43,10 +46,14 @@ if (ENV.NODE_ENV === "production") {
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(ENV.PORT, () => console.log("Server is running on port:", ENV.PORT));
+    if (!process.env.VERCEL) {
+      app.listen(ENV.PORT, () => console.log("Server is running on port:", ENV.PORT));
+    }
   } catch (error) {
     console.error("Error starting the server", error);
   }
 };
 
 startServer();
+
+export default app;

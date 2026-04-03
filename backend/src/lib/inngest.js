@@ -12,20 +12,24 @@ const syncUser = inngest.createFunction(
     await connectDB();
 
     const { id, email_addresses, first_name, last_name, image_url } = event.data;
+    const name = `${first_name || ""} ${last_name || ""}`.trim();
+    const email = email_addresses[0]?.email_address;
 
-    const newUser = {
-      clerkId: id,
-      email: email_addresses[0]?.email_address,
-      name: `${first_name || ""} ${last_name || ""}`,
-      profileImage: image_url,
-    };
-
-    await User.create(newUser);
+    const user = await User.findOneAndUpdate(
+      { clerkId: id },
+      {
+        clerkId: id,
+        email,
+        name,
+        profileImage: image_url,
+      },
+      { new: true, upsert: true }
+    );
 
     await upsertStreamUser({
-      id: newUser.clerkId.toString(),
-      name: newUser.name,
-      image: newUser.profileImage,
+      id: user.clerkId.toString(),
+      name: user.name,
+      image: user.profileImage,
     });
   }
 );

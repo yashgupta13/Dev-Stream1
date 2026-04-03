@@ -124,14 +124,11 @@ export async function joinSession(req, res) {
       });
     }
 
-    if (!password) {
-      return res.status(400).json({ message: "Password is required" });
-    }
+    // verify password (only if user is NOT the invited candidate)
+    // if the user is the invited candidate, they can join without a password because they are already verified by email
+    const isMatch = await bcrypt.compare(password || "", session.password);
 
-    // verify password
-    const isMatch = await bcrypt.compare(password, session.password);
-
-    if (!isMatch) {
+    if (!isMatch && session.candidateEmail !== userEmail) {
       return res.status(401).json({ message: "Incorrect password" });
     }
 

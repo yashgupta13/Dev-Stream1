@@ -49,6 +49,11 @@ const sessionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add indices for performance
+sessionSchema.index({ host: 1, status: 1 });
+sessionSchema.index({ candidateEmail: 1, status: 1 });
+sessionSchema.index({ participant: 1 });
+
 const Session = mongoose.model("Session", sessionSchema);
 
 export default Session;

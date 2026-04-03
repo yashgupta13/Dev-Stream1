@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { upsertStreamUser } from "../lib/stream.js";
 
 export async function syncUser(req, res) {
   try {
@@ -6,17 +7,26 @@ export async function syncUser(req, res) {
     const { emailAddresses, firstName, lastName, imageUrl } = req.auth().sessionClaims;
 
     const email = emailAddresses?.[0]?.emailAddress;
+    const name = `${firstName || ""} ${lastName || ""}`.trim();
 
-    let user = await User.findOne({ clerkId });
-
-    if (!user) {
-      user = await User.create({
+    // use upsert to avoid race conditions with Inngest functions
+    const user = await User.findOneAndUpdate(
+      { clerkId },
+      {
         clerkId,
         email,
-        name: `${firstName || ""} ${lastName || ""}`.trim(),
+        name,
         profileImage: imageUrl,
-      });
-    }
+      },
+      { new: true, upsert: true }
+    );
+
+    // ensure stream user is also synced synchronously
+    await upsertStreamUser({
+      id: user.clerkId.toString(),
+      name: user.name,
+      image: user.profileImage,
+    });
 
     res.status(200).json({ user });
   } catch (err) {
