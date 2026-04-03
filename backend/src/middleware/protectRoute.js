@@ -1,8 +1,12 @@
 import { requireAuth } from "@clerk/express";
 import User from "../models/User.js";
 
+// this only checks if the user is authenticated with Clerk
+export const requireClerkAuth = requireAuth();
+
+// this checks both Clerk auth AND if the user exists in our MongoDB
 export const protectRoute = [
-  requireAuth(),
+  requireClerkAuth,
   async (req, res, next) => {
     try {
       const clerkId = req.auth().userId;
